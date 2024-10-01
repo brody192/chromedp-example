@@ -20,7 +20,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	// create context
 	allocatorContext, cancel := chromedp.NewRemoteAllocator(
 		context.Background(),
 		browserWsEndpoint,
@@ -29,19 +28,20 @@ func main() {
 
 	defer cancel()
 
-	ctx, cancel := chromedp.NewContext(allocatorContext)
-
-	defer cancel()
-
-	// Set viewport size to 1920x1080
-	if err := chromedp.Run(ctx, chromedp.EmulateViewport(1920, 1080)); err != nil {
-		logger.Error("error emulating viewport", "error", err)
-		os.Exit(1)
-	}
-
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		ctx, cancel := chromedp.NewContext(allocatorContext)
+
+		defer cancel()
+
+		// Set viewport size to 1920x1080
+		if err := chromedp.Run(ctx, chromedp.EmulateViewport(1920, 1080)); err != nil {
+			logger.Error("error emulating viewport", "error", err)
+			http.Error(w, "error emulating viewport", http.StatusInternalServerError)
+			return
+		}
+
 		var buf []byte
 
 		if err := chromedp.Run(ctx, chromedp.Tasks{

@@ -13,16 +13,9 @@ import (
 var logger = slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
 func main() {
-	browserWsEndpoint := os.Getenv("BROWSER_WS_ENDPOINT")
-
-	if browserWsEndpoint == "" {
-		logger.Error("BROWSER_WS_ENDPOINT is not set")
-		os.Exit(1)
-	}
-
 	allocatorContext, cancel := chromedp.NewRemoteAllocator(
 		context.Background(),
-		browserWsEndpoint,
+		os.Getenv("BROWSER_WS_ENDPOINT"),
 		chromedp.NoModifyURL,
 	)
 
